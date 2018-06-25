@@ -2,9 +2,9 @@ services:
     draw.exception_subscriber:
         class: Draw\DrawBundle\EventListener\ApiExceptionSubscriber
         arguments:
-            - %kernel.debug%
-            - %fos_rest.exception.codes%
+            - '%kernel.debug%'
+            - '%fos_rest.exception.codes%'
         calls:
-            - [setContainer, [@service_container]]
+            - [setContainer, ['@service_container']]
         tags:
             - { name: kernel.event_subscriber }
