@@ -8,7 +8,7 @@ parameters:
 
 services:
     draw.error_handling.exception_message_formatter:
-        class: %draw.error_handling.exception_message_formatter.class%
+        class: '%draw.error_handling.exception_message_formatter.class%'
 
     draw.request_deserializer:
         alias: fos_rest.converter.request_body
@@ -22,21 +22,26 @@ services:
 
     draw.doctrine.validation_entity_subscriber:
         class: Draw\DrawBundle\Validator\ValidationEntitySubscriber
-        arguments: [@service_container]
+        arguments:
+            - '@service_container'
         tags:
-            - { name: doctrine.event_subscriber }
+            - {name: doctrine.event_subscriber}
 
     draw.security.voter.own_voter:
         class: Draw\DrawBundle\Security\Voter\OwnVoter
         tags:
-            - { name: security.voter }
+            - {name: security.voter}
 
     draw.serializer.group_hierarchy:
         class: Draw\DrawBundle\Serializer\GroupHierarchy
-        arguments: [%draw.serializer.group_hierarchy%, %draw.serializer.groups_always_present%]
+        arguments:
+            - '%draw.serializer.group_hierarchy%'
+            - '%draw.serializer.groups_always_present%'
 
     draw.serializer.self_link:
         class: Draw\DrawBundle\Serializer\SelfLinkEventListener
-        arguments: [@service_container, %draw.serializer.self_link.entities_routes%]
+        arguments:
+            - '@service_container'
+            - '%draw.serializer.self_link.entities_routes%'
         tags:
-            - { name: jms_serializer.event_listener, format: json, direction: serialization, event: serializer.post_serialize, method: onPostSerialize  }
+            - {name: jms_serializer.event_listener, format: json, direction: serialization, event: serializer.post_serialize, method: onPostSerialize}
