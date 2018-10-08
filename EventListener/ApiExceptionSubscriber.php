@@ -2,30 +2,38 @@
 
 namespace Draw\DrawBundle\EventListener;
 
+use Draw\DrawBundle\ErrorHandling\ExceptionMessageFormatterInterface;
 use Draw\DrawBundle\Validator\Exception\ConstraintViolationListException;
-use Symfony\Component\DependencyInjection\ContainerAwareInterface;
-use Symfony\Component\DependencyInjection\ContainerAwareTrait;
+use Psr\Log\LoggerAwareInterface;
+use Psr\Log\LoggerAwareTrait;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpKernel\Event\GetResponseForExceptionEvent;
 use Symfony\Component\HttpKernel\KernelEvents;
 
-class ApiExceptionSubscriber implements EventSubscriberInterface, ContainerAwareInterface
+class ApiExceptionSubscriber implements EventSubscriberInterface, LoggerAwareInterface
 {
-    use ContainerAwareTrait;
+    use LoggerAwareTrait;
 
     private $debug;
 
     private $exceptionCodes;
 
-    const DEFAULT_STATUS_CODE           = 500;
+    /**
+     * @var ExceptionMessageFormatterInterface
+     */
+    private $exceptionMessageFormatter;
+
+    const DEFAULT_STATUS_CODE = 500;
 
     public function __construct(
+        ExceptionMessageFormatterInterface $exceptionMessageFormatter,
         $debug,
         $exceptionCodes
     ) {
         $this->debug = $debug;
+        $this->exceptionMessageFormatter = $exceptionMessageFormatter;
         $this->exceptionCodes = $exceptionCodes;
         $this->exceptionCodes[ConstraintViolationListException::class] = 400;
     }
@@ -73,24 +81,22 @@ class ApiExceptionSubscriber implements EventSubscriberInterface, ContainerAware
     public function onKernelException(GetResponseForExceptionEvent $event)
     {
         $exception = $event->getException();
-        $request   = $event->getRequest();
+        $request = $event->getRequest();
 
-        if($this->getFormat($request) != 'json'){
+        if ($this->getFormat($request) != 'json') {
             return;
         }
 
-        $this->container->get("logger")
-            ->notice('Intercepted exception', $this->getExceptionDetail($exception, false));
+        $this->logger->notice('Intercepted exception', $this->getExceptionDetail($exception, false));
 
         $statusCode = $this->getStatusCode($exception);
 
         $data = array(
             "code" => $statusCode,
-            "message" => $this->container->get('draw.error_handling.exception_message_formatter')
-                ->formatExceptionMessage($exception)
+            "message" => $this->exceptionMessageFormatter->formatExceptionMessage($exception)
         );
 
-        if($exception instanceof ConstraintViolationListException) {
+        if ($exception instanceof ConstraintViolationListException) {
             $errors = array();
             foreach ($exception->getViolationList() as $constraintViolation) {
                 /* @var $constraintViolation \Symfony\Component\Validator\ConstraintViolationInterface */
@@ -101,7 +107,7 @@ class ApiExceptionSubscriber implements EventSubscriberInterface, ContainerAware
                     'code' => $constraintViolation->getCode()
                 );
 
-                if($constraintViolation->getConstraint() && !is_null($payload = $constraintViolation->getConstraint()->payload)) {
+                if ($constraintViolation->getConstraint() && !is_null($payload = $constraintViolation->getConstraint()->payload)) {
                     $error['payload'] = $payload;
                 }
 
@@ -111,7 +117,7 @@ class ApiExceptionSubscriber implements EventSubscriberInterface, ContainerAware
             $data['errors'] = $errors;
         }
 
-        if($this->debug) {
+        if ($this->debug) {
             $data['detail'] = $this->getExceptionDetail($exception);
         }
 
@@ -123,15 +129,16 @@ class ApiExceptionSubscriber implements EventSubscriberInterface, ContainerAware
      * @param Request $request
      * @return string
      */
-    private function getFormat(Request $request){
+    private function getFormat(Request $request)
+    {
         $acceptKey = null;
-        if($request->headers->has('Accept')){
+        if ($request->headers->has('Accept')) {
             $acceptKey = 'Accept';
         }
-        if($request->headers->has('accept')){
+        if ($request->headers->has('accept')) {
             $acceptKey = 'accept';
         }
-        if(strstr($request->headers->get($acceptKey), 'json')){
+        if (strstr($request->headers->get($acceptKey), 'json')) {
             return 'json';
         }
         return 'other';
@@ -147,12 +154,12 @@ class ApiExceptionSubscriber implements EventSubscriberInterface, ContainerAware
             'line' => $e->getLine()
         );
 
-        if($full) {
-            foreach(explode("\n",$e->getTraceAsString()) as $line) {
+        if ($full) {
+            foreach (explode("\n", $e->getTraceAsString()) as $line) {
                 $result['stack'][] = $line;
             }
 
-            if($previous = $e->getPrevious()) {
+            if ($previous = $e->getPrevious()) {
                 $result['previous'] = $this->getExceptionDetail($previous);
             }
         }
