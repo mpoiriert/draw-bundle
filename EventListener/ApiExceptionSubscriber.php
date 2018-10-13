@@ -10,6 +10,7 @@ use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpKernel\Event\GetResponseForExceptionEvent;
+use Symfony\Component\HttpKernel\Exception\HttpException;
 use Symfony\Component\HttpKernel\KernelEvents;
 
 class ApiExceptionSubscriber implements EventSubscriberInterface, LoggerAwareInterface
@@ -54,6 +55,10 @@ class ApiExceptionSubscriber implements EventSubscriberInterface, LoggerAwareInt
      */
     protected function getStatusCode($exception)
     {
+        if($exception instanceof HttpException) {
+            return $exception->getStatusCode();
+        }
+
         return $this->isSubclassOf($exception, $this->exceptionCodes) ?: self::DEFAULT_STATUS_CODE;
     }
 
@@ -122,7 +127,14 @@ class ApiExceptionSubscriber implements EventSubscriberInterface, LoggerAwareInt
         }
 
         $event->stopPropagation();
-        $event->setResponse(new JsonResponse($data, $statusCode));
+        $event->setResponse(
+            new JsonResponse(
+                json_encode($data, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_PRESERVE_ZERO_FRACTION),
+                $statusCode,
+                [],
+                true
+            )
+        );
     }
 
     /**
@@ -144,7 +156,7 @@ class ApiExceptionSubscriber implements EventSubscriberInterface, LoggerAwareInt
         return 'other';
     }
 
-    public function getExceptionDetail(\Exception $e, $full = true)
+    public function getExceptionDetail($e, $full = true)
     {
         $result = array(
             'class' => get_class($e),
