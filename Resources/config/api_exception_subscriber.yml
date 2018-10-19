@@ -1,3 +1,6 @@
+parameters:
+    draw.exception_subscriber.violation_key: errors
+
 services:
     draw.exception_subscriber:
         class: Draw\DrawBundle\EventListener\ApiExceptionSubscriber
@@ -5,6 +8,7 @@ services:
             - '@draw.error_handling.exception_message_formatter'
             - '%kernel.debug%'
             - '%fos_rest.exception.codes%'
+            - '%draw.exception_subscriber.violation_key%'
         calls:
             - [setLogger, ['@logger']]
         tags:

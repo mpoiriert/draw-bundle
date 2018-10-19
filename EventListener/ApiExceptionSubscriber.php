@@ -26,17 +26,24 @@ class ApiExceptionSubscriber implements EventSubscriberInterface, LoggerAwareInt
      */
     private $exceptionMessageFormatter;
 
+    /**
+     * @var string
+     */
+    private $violationKey;
+
     const DEFAULT_STATUS_CODE = 500;
 
     public function __construct(
         ExceptionMessageFormatterInterface $exceptionMessageFormatter,
         $debug,
-        $exceptionCodes
+        $exceptionCodes,
+        $violationKey = 'errors'
     ) {
         $this->debug = $debug;
         $this->exceptionMessageFormatter = $exceptionMessageFormatter;
         $this->exceptionCodes = $exceptionCodes;
         $this->exceptionCodes[ConstraintViolationListException::class] = 400;
+        $this->violationKey = $violationKey;
     }
 
     /**
@@ -119,7 +126,7 @@ class ApiExceptionSubscriber implements EventSubscriberInterface, LoggerAwareInt
                 $errors[] = $error;
             }
 
-            $data['errors'] = $errors;
+            $data[$this->violationKey] = $errors;
         }
 
         if ($this->debug) {
