@@ -41,10 +41,5 @@ class CompilerPass implements CompilerPassInterface
                 [new Reference("draw.serializer.group_hierarchy")]
             );
         }
-
-        if($container->hasDefinition('jms_serializer.doctrine_object_constructor')) {
-            $container->getDefinition("jms_serializer.doctrine_object_constructor")
-                ->setClass('Draw\DrawBundle\Serializer\Construction\DoctrineObjectConstructor');
-        }
     }
 }
