@@ -150,17 +150,7 @@ class ApiExceptionSubscriber implements EventSubscriberInterface, LoggerAwareInt
      */
     private function getFormat(Request $request)
     {
-        $acceptKey = null;
-        if ($request->headers->has('Accept')) {
-            $acceptKey = 'Accept';
-        }
-        if ($request->headers->has('accept')) {
-            $acceptKey = 'accept';
-        }
-        if (strstr($request->headers->get($acceptKey), 'json')) {
-            return 'json';
-        }
-        return 'other';
+        return $request->getRequestFormat();
     }
 
     public function getExceptionDetail($e, $full = true)
