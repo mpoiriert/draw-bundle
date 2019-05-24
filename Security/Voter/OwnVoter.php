@@ -2,6 +2,8 @@
 
 namespace Draw\DrawBundle\Security\Voter;
 
+use Draw\DrawBundle\Security\OwnedByInterface;
+use Draw\DrawBundle\Security\OwnedInterface;
 use Draw\DrawBundle\Security\OwnerInterface;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
 use Symfony\Component\Security\Core\Authorization\Voter\VoterInterface;
@@ -17,12 +19,14 @@ class OwnVoter implements VoterInterface
     {
         $class = new \ReflectionClass($class);
 
-        return $class->implementsInterface('Draw\DrawBundle\Security\OwnedInterface');
+        return
+            $class->implementsInterface(OwnedInterface::class)
+            || $class->implementsInterface(OwnedByInterface::class);
     }
 
     /**
      * @param TokenInterface $token
-     * @param null|\Draw\DrawBundle\Security\OwnedInterface $object
+     * @param null|OwnedInterface|OwnedByInterface $object
      * @param array $attributes
      * @return int
      */
@@ -46,7 +50,18 @@ class OwnVoter implements VoterInterface
                 continue;
             }
 
-            return $object->isOwnedBy($user) ? VoterInterface::ACCESS_GRANTED : VoterInterface::ACCESS_DENIED;
+            if($object instanceof OwnedInterface) {
+                $object->isOwnedBy($user) ? VoterInterface::ACCESS_GRANTED : VoterInterface::ACCESS_DENIED;
+            } elseif($object instanceof OwnedByInterface) {
+                $ownedBy = $object->getOwnedBy();
+                if(is_null($ownedBy)) {
+                    continue;
+                }
+
+                return $ownedBy->getOwnerId() == $user->getOwnerId()
+                    ? VoterInterface::ACCESS_GRANTED
+                    : VoterInterface::ACCESS_DENIED;
+            }
         }
 
         return VoterInterface::ACCESS_ABSTAIN;
