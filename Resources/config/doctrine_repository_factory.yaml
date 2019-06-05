@@ -1,0 +1,10 @@
+services:
+    _defaults:
+        autowire: true
+
+    Draw\DrawBundle\Doctrine\Repository\Factory:
+        class: 'Draw\DrawBundle\Doctrine\Repository\Factory'
+        arguments:
+            $ids: []
+
+    Doctrine\ORM\Repository\DefaultRepositoryFactory: ~

@@ -1,25 +1,26 @@
-<?php
-
-namespace Draw\DrawBundle\Request;
+<?php namespace Draw\DrawBundle\Request;
 
 use Draw\DrawBundle\PropertyAccess\DynamicArrayObject;
 use Draw\DrawBundle\Request\Exception\RequestValidationException;
-use Draw\DrawBundle\Serializer\GroupHierarchy;
-use JMS\Serializer\DeserializationContext;
+use FOS\RestBundle\Serializer\Serializer;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\ParamConverter;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\PropertyAccess\PropertyAccess;
+use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 class RequestBodyParamConverter extends \FOS\RestBundle\Request\RequestBodyParamConverter
 {
-    /**
-     * @var GroupHierarchy
-     */
-    private $groupHierarchy;
+    private $validationErrorsArgument;
 
-    public function setGroupHierarchy(GroupHierarchy $groupHierarchy)
-    {
-        $this->groupHierarchy = $groupHierarchy;
+    public function __construct(
+        Serializer $serializer,
+        $groups = null,
+        $version = null,
+        ValidatorInterface $validator = null,
+        $validationErrorsArgument = null
+    ) {
+        parent::__construct($serializer, $groups, $version, $validator, $validationErrorsArgument);
+        $this->validationErrorsArgument = $validationErrorsArgument;
     }
 
     public function apply(Request $request, ParamConverter $configuration)
@@ -45,7 +46,7 @@ class RequestBodyParamConverter extends \FOS\RestBundle\Request\RequestBodyParam
             $property->setValue($request, json_encode($content->getArrayCopy()));
         }
 
-        $result = $this->execute($request, $configuration);
+        $result = $this->apply($request, $configuration);
 
         if ($this->validationErrorsArgument && $request->attributes->has($this->validationErrorsArgument)) {
             if (count($errors = $request->attributes->get($this->validationErrorsArgument))) {
@@ -61,24 +62,5 @@ class RequestBodyParamConverter extends \FOS\RestBundle\Request\RequestBodyParam
         $exception = new RequestValidationException();
         $exception->setViolationList($errors);
         throw $exception;
-    }
-
-    public function configureDeserializationContext(DeserializationContext $context, array $options)
-    {
-        if (!isset($options['groups'])) {
-            $options['groups'] = ['Default'];
-        }
-
-        $options['groups'] = $this->groupHierarchy->getReachableGroups($options['groups']);
-
-        $context = parent::configureDeserializationContext($context, $options);
-
-        if(isset($options['attributes'])) {
-            foreach($options['attributes'] as $attribute => $value) {
-                $context->setAttribute($attribute, $value);
-            }
-        }
-
-        return $context;
     }
 }

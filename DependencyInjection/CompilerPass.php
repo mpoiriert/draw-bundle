@@ -1,16 +1,11 @@
-<?php
-
-namespace Draw\DrawBundle\DependencyInjection;
+<?php namespace Draw\DrawBundle\DependencyInjection;
 
 use Draw\DrawBundle\Request\RequestBodyParamConverter;
-use Draw\DrawBundle\Request\FOSRequestBodyParamConverterApply;
 use Symfony\Component\DependencyInjection\Compiler\CompilerPassInterface;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
-use Symfony\Component\DependencyInjection\Reference;
 
 class CompilerPass implements CompilerPassInterface
 {
-
     /**
      * You can modify the container here before it is dumped to PHP code.
      *
@@ -28,18 +23,7 @@ class CompilerPass implements CompilerPassInterface
         }
 
         if(!is_null($requestBodyConverter)) {
-            $reflectionClass = new \ReflectionClass($requestBodyConverter->getClass());
-
-            if($reflectionClass->hasMethod('execute')) {
-                $requestBodyConverter->setClass(RequestBodyParamConverter::class);
-            } else {
-                $requestBodyConverter->setClass(FOSRequestBodyParamConverterApply::class);
-            }
-
-            $requestBodyConverter->addMethodCall(
-                "setGroupHierarchy",
-                [new Reference("draw.serializer.group_hierarchy")]
-            );
+            $requestBodyConverter->setClass(RequestBodyParamConverter::class);
         }
     }
 }

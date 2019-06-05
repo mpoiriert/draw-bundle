@@ -1,0 +1,10 @@
+services:
+    Draw\DrawBundle\Serializer\Construction\SimpleObjectConstructor:
+        class: 'Draw\DrawBundle\Serializer\Construction\SimpleObjectConstructor'
+
+    Draw\DrawBundle\Serializer\Construction\DoctrineObjectConstructor:
+        class: 'Draw\DrawBundle\Serializer\Construction\DoctrineObjectConstructor'
+
+    jms_serializer.object_constructor: '@Draw\DrawBundle\Serializer\Construction\DoctrineObjectConstructor'
+
+    jms_serializer.unserialize_object_constructor: '@Draw\DrawBundle\Serializer\Construction\SimpleObjectConstructor'

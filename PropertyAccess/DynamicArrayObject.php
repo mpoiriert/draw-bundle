@@ -1,6 +1,4 @@
-<?php
-
-namespace Draw\DrawBundle\PropertyAccess;
+<?php namespace Draw\DrawBundle\PropertyAccess;
 
 use ArrayObject;
 

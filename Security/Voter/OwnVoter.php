@@ -1,6 +1,4 @@
-<?php
-
-namespace Draw\DrawBundle\Security\Voter;
+<?php namespace Draw\DrawBundle\Security\Voter;
 
 use Draw\DrawBundle\Security\OwnedByInterface;
 use Draw\DrawBundle\Security\OwnedInterface;

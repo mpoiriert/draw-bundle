@@ -1,15 +1,12 @@
-<?php
+<?php namespace Draw\DrawBundle\ErrorHandling;
 
-namespace Draw\DrawBundle\ErrorHandling;
-
-
-use Exception;
+use Throwable;
 
 class DefaultExceptionMessageFormatter implements ExceptionMessageFormatterInterface
 {
-    public function formatExceptionMessage(Exception $exception)
+    public function formatExceptionMessage(Throwable $throwable)
     {
-        return $exception->getMessage();
+        return $throwable->getMessage();
     }
 
 }

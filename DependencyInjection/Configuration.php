@@ -17,13 +17,14 @@ class Configuration implements ConfigurationInterface
      */
     public function getConfigTreeBuilder()
     {
-        $treeBuilder = new TreeBuilder();
-        $treeBuilder->root('draw_bundle')
-            ->children()
-                ->booleanNode('serialization_add_class')->defaultFalse()->end()
-                ->booleanNode('use_api_exception_subscriber')->defaultTrue()->end()
-                ->booleanNode('use_doctrine_repository_factory')->defaultTrue()->end()
-            ->end();
+        $treeBuilder = new TreeBuilder('draw');
+        $treeBuilder
+            ->getRootNode()
+                ->children()
+                    ->booleanNode('use_jms_serializer')->defaultTrue()->end()
+                    ->booleanNode('use_api_exception_subscriber')->defaultTrue()->end()
+                    ->booleanNode('use_doctrine_repository_factory')->defaultTrue()->end()
+                ->end();
 
         return $treeBuilder;
     }

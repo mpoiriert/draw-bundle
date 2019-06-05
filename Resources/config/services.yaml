@@ -1,0 +1,18 @@
+parameters:
+    fos_rest.converter.request_body.class: Draw\DrawBundle\Request\RequestBodyParamConverter
+
+services:
+    _defaults:
+        public: true
+
+    Draw\DrawBundle\ErrorHandling\DefaultExceptionMessageFormatter:
+        class: 'Draw\DrawBundle\ErrorHandling\DefaultExceptionMessageFormatter'
+
+    Draw\DrawBundle\ErrorHandling\ExceptionMessageFormatterInterface: '@Draw\DrawBundle\ErrorHandling\DefaultExceptionMessageFormatter'
+
+    draw.request_deserializer: '@fos_rest.converter.request_body'
+
+    Draw\DrawBundle\Security\Voter\OwnVoter:
+        class: Draw\DrawBundle\Security\Voter\OwnVoter
+        tags:
+            - { name: security.voter }

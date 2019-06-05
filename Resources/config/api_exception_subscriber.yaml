@@ -1,0 +1,14 @@
+parameters:
+    draw.exception_subscriber.violation_key: errors
+
+services:
+    _defaults:
+        autowire: true
+        autoconfigure: true
+
+    Draw\DrawBundle\EventListener\ApiExceptionSubscriber:
+        class: 'Draw\DrawBundle\EventListener\ApiExceptionSubscriber'
+        arguments:
+            $debug: '%kernel.debug%'
+            $exceptionCodes: []
+            $violationKey: '%draw.exception_subscriber.violation_key%'

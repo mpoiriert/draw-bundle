@@ -1,21 +1,39 @@
 {
     "name": "draw/draw-bundle",
-    "type": "project",
-    "description": "Bundle with helper and tool to ease and speed up symfony2 development ",
+    "type": "symfony-bundle",
+    "description": "Bundle with helper and tool to ease and speed up symfony development ",
     "minimum-stability": "dev",
     "prefer-stable": true,
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Martin Poirier-Theoret",
+            "email": "mpoiriert@gmail.com"
+        }
+    ],
     "autoload": {
         "psr-4": {
             "Draw\\DrawBundle\\": ""
         }
     },
     "require": {
-        "php": ">=5.6",
-        "symfony/framework-bundle": ">=2.3"
+        "php": ">=7.2",
+        "ext-json": "*",
+        "symfony/config": "^4.0",
+        "symfony/dependency-injection": "^4.0",
+        "symfony/http-kernel": "^4.0",
+        "symfony/yaml": "^4.0"
     },
     "require-dev": {
-        "phpunit/phpunit": "4.1.*",
-        "symfony/symfony": "~2.3"
+        "jms/serializer-bundle": "~3.0",
+        "symfony/property-access": "*",
+        "sensio/framework-extra-bundle": "^3.0.13|^4.0|^5.0",
+        "symfony/phpunit-bridge": "^4.2|^5.0",
+        "doctrine/doctrine-bundle": "*",
+        "doctrine/dbal": "^2.9",
+        "doctrine/orm": "^2.6",
+        "friendsofsymfony/rest-bundle": "^2.0",
+        "symfony/validator": "^4.0"
     }
 }
 

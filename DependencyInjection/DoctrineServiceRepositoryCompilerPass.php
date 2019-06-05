@@ -2,6 +2,7 @@
 
 namespace Draw\DrawBundle\DependencyInjection;
 
+use Draw\DrawBundle\Doctrine\Repository\Factory;
 use Symfony\Component\DependencyInjection\Compiler\CompilerPassInterface;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Definition;
@@ -21,7 +22,7 @@ class DoctrineServiceRepositoryCompilerPass implements CompilerPassInterface
     public function process(ContainerBuilder $container)
     {
         try {
-            $factory = $container->findDefinition('draw.doctrine.repository.factory');
+            $factory = $container->findDefinition(Factory::class);
             $configurationDefinition = $container->findDefinition('doctrine.orm.configuration');
         } catch (ServiceNotFoundException $e) {
             //The configuration draw.use_doctrine_repository_factory is probably set to false

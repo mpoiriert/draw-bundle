@@ -51,9 +51,9 @@ class ApiExceptionSubscriber implements EventSubscriberInterface, LoggerAwareInt
      */
     public static function getSubscribedEvents()
     {
-        return array(
+        return [
             KernelEvents::EXCEPTION => array('onKernelException', 255)
-        );
+        ];
     }
 
     /**
@@ -62,7 +62,7 @@ class ApiExceptionSubscriber implements EventSubscriberInterface, LoggerAwareInt
      */
     protected function getStatusCode($exception)
     {
-        if($exception instanceof HttpException) {
+        if ($exception instanceof HttpException) {
             return $exception->getStatusCode();
         }
 
@@ -153,15 +153,15 @@ class ApiExceptionSubscriber implements EventSubscriberInterface, LoggerAwareInt
         return $request->getRequestFormat();
     }
 
-    public function getExceptionDetail($e, $full = true)
+    public function getExceptionDetail(\Throwable $e, $full = true)
     {
-        $result = array(
+        $result = [
             'class' => get_class($e),
             'message' => $e->getMessage(),
             'code' => $e->getCode(),
             'file' => $e->getFile(),
             'line' => $e->getLine()
-        );
+        ];
 
         if ($full) {
             foreach (explode("\n", $e->getTraceAsString()) as $line) {
