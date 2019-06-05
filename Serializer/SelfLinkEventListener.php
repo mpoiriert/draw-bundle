@@ -44,6 +44,10 @@ class SelfLinkEventListener
 
     public function onPostSerialize(ObjectEvent $objectEvent)
     {
+        if(!class_exists(ClassUtils::class)) {
+            return;
+        }
+
         $visitor = $objectEvent->getVisitor();
         $object = $objectEvent->getObject();
         $router = $this->container->get("router");

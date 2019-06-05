@@ -22,8 +22,10 @@ class DoctrineServiceRepositoryCompilerPass implements CompilerPassInterface
     {
         try {
             $factory = $container->findDefinition('draw.doctrine.repository.factory');
+            $configurationDefinition = $container->findDefinition('doctrine.orm.configuration');
         } catch (ServiceNotFoundException $e) {
             //The configuration draw.use_doctrine_repository_factory is probably set to false
+            //Or doctrine.orm.configuration is not available because of doctrine bundle not present
             return;
         }
 
@@ -41,6 +43,6 @@ class DoctrineServiceRepositoryCompilerPass implements CompilerPassInterface
             }
         }
         $factory->replaceArgument(0, $repositories);
-        $container->findDefinition('doctrine.orm.configuration')->addMethodCall('setRepositoryFactory', [$factory]);
+        $configurationDefinition->addMethodCall('setRepositoryFactory', [$factory]);
     }
 }
