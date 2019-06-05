@@ -43,7 +43,8 @@ class DoctrineServiceRepositoryCompilerPass implements CompilerPassInterface
                 $repository->replaceArgument(1, $definition);
             }
         }
-        $factory->replaceArgument(0, $repositories);
+
+        $factory->replaceArgument('$ids', $repositories);
         $configurationDefinition->addMethodCall('setRepositoryFactory', [$factory]);
     }
 }

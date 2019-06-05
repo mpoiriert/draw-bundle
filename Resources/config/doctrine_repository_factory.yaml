@@ -8,3 +8,4 @@ services:
             $ids: []
 
     Doctrine\ORM\Repository\DefaultRepositoryFactory: ~
+    Doctrine\ORM\Repository\RepositoryFactory: '@Doctrine\ORM\Repository\DefaultRepositoryFactory'
