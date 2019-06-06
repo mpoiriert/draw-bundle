@@ -46,7 +46,7 @@ class RequestBodyParamConverter extends \FOS\RestBundle\Request\RequestBodyParam
             $property->setValue($request, json_encode($content->getArrayCopy()));
         }
 
-        $result = $this->apply($request, $configuration);
+        $result = parent::apply($request, $configuration);
 
         if ($this->validationErrorsArgument && $request->attributes->has($this->validationErrorsArgument)) {
             if (count($errors = $request->attributes->get($this->validationErrorsArgument))) {

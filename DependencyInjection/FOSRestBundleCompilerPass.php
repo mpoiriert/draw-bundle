@@ -1,10 +1,9 @@
 <?php namespace Draw\DrawBundle\DependencyInjection;
 
+use Draw\DrawBundle\EventListener\ApiExceptionSubscriber;
 use Symfony\Component\DependencyInjection\Compiler\CompilerPassInterface;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
-use Symfony\Component\DependencyInjection\Definition;
 use Symfony\Component\DependencyInjection\Exception\ServiceNotFoundException;
-use Symfony\Component\DependencyInjection\Reference;
 
 class FOSRestBundleCompilerPass implements CompilerPassInterface
 {
@@ -19,7 +18,7 @@ class FOSRestBundleCompilerPass implements CompilerPassInterface
     public function process(ContainerBuilder $container)
     {
         try {
-            $exceptionSubscriberDefinition = $container->findDefinition('draw.exception_subscriber');
+            $exceptionSubscriberDefinition = $container->findDefinition(ApiExceptionSubscriber::class);
         } catch (ServiceNotFoundException $e) {
             //The configuration draw.use_api_exception_subscriber is probably set to false
             return;
@@ -34,7 +33,7 @@ class FOSRestBundleCompilerPass implements CompilerPassInterface
         }
 
         if($container->hasParameter('fos_rest.exception.codes')) {
-            $exceptionSubscriberDefinition->setArgument(2, $container->getParameter('fos_rest.exception.codes'));
+            $exceptionSubscriberDefinition->setArgument('$exceptionCodes', $container->getParameter('fos_rest.exception.codes'));
         }
     }
 }

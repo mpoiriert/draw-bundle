@@ -65,13 +65,17 @@ class DoctrineObjectConstructor implements ObjectConstructorInterface
 
         //If the object is not found we relay on the fallback constructor
         if (is_null($object = $this->loadObject($metadata->name, $data, $context))) {
-            switch ($context->getAttribute('constructionFallbackStrategy')) {
-                case null:
+            $constructionFallbackStrategy = null;
+            if($context->hasAttribute('constructionFallbackStrategy')) {
+                $constructionFallbackStrategy = $context->getAttribute('constructionFallbackStrategy');
+            }
+            switch ($constructionFallbackStrategy) {
                 case self::ON_MISSING_NULL:
                     return null;
                 case self::ON_MISSING_EXCEPTION:
                     throw new ObjectConstructionException(sprintf('Entity %s can not be found', $metadata->name));
                 case self::ON_MISSING_FALLBACK:
+                case null:
                     return $this->fallbackConstructor->construct($visitor, $metadata, $data, $type, $context);
                 default:
                     throw new InvalidArgumentException('The context constructionFallbackStrategy');
@@ -110,11 +114,14 @@ class DoctrineObjectConstructor implements ObjectConstructorInterface
             }
 
             if ($classMetadata->hasAssociation($name)) {
-                $data[$name] = $this->loadObject($classMetadata->getAssociationTargetClass($name), $data[$dataName],
-                    $context);
+                $data[$dataName] = $this->loadObject(
+                        $classMetadata->getAssociationTargetClass($name),
+                        $data[$dataName],
+                        $context
+                    );
             }
 
-            $identifierList[$name] = $data[$name];
+            $identifierList[$name] = $data[$dataName];
         }
 
         if (empty($identifierList)) {
