@@ -1,9 +1,17 @@
 services:
+    _defaults:
+        autowire: true
+        autoconfigure: true
+
     Draw\DrawBundle\Serializer\Construction\SimpleObjectConstructor:
         class: 'Draw\DrawBundle\Serializer\Construction\SimpleObjectConstructor'
 
     Draw\DrawBundle\Serializer\Construction\DoctrineObjectConstructor:
         class: 'Draw\DrawBundle\Serializer\Construction\DoctrineObjectConstructor'
+        arguments:
+            $fallbackConstructor: '@jms_serializer.unserialize_object_constructor'
+
+    Metadata\MetadataFactoryInterface: '@jms_serializer.metadata_factory'
 
     jms_serializer.object_constructor: '@Draw\DrawBundle\Serializer\Construction\DoctrineObjectConstructor'
 
