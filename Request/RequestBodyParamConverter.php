@@ -28,7 +28,11 @@ class RequestBodyParamConverter extends \FOS\RestBundle\Request\RequestBodyParam
         $options = (array)$configuration->getOptions();
 
         if (isset($options['propertiesMap'])) {
-            $content = new DynamicArrayObject(json_decode($request->getContent(), true));
+            //This allow a empty body to be consider as '{}'
+            if(is_null($requestData = json_decode($request->getContent(), true))) {
+                $requestData = [];
+            }
+            $content = new DynamicArrayObject($requestData);
 
             $propertyAccessor = PropertyAccess::createPropertyAccessor();
 

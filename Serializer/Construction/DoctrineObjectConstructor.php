@@ -64,7 +64,7 @@ class DoctrineObjectConstructor implements ObjectConstructorInterface
         }
 
         //If the object is not found we relay on the fallback constructor
-        if (is_null($object = $this->loadObject($metadata->name, $data, $context))) {
+        if (is_null($object = $this->loadObject($metadata->name, $data, $context, $context->getCurrentPath()))) {
             $constructionFallbackStrategy = null;
             if($context->hasAttribute('constructionFallbackStrategy')) {
                 $constructionFallbackStrategy = $context->getAttribute('constructionFallbackStrategy');
@@ -85,7 +85,7 @@ class DoctrineObjectConstructor implements ObjectConstructorInterface
         return $object;
     }
 
-    private function loadObject($class, $data, DeserializationContext $context)
+    private function loadObject($class, $data, DeserializationContext $context, array $path)
     {
         $objectManager = $this->managerRegistry->getManagerForClass($class);
         $classMetadataFactory = $objectManager->getMetadataFactory();
@@ -100,9 +100,28 @@ class DoctrineObjectConstructor implements ObjectConstructorInterface
 
         $classMetadata = $objectManager->getClassMetadata($class);
         $serializationMetadata = $this->metadataFactory->getMetadataForClass($class);
-        $identifierList = [];
 
-        foreach ($classMetadata->getIdentifierFieldNames() as $name) {
+        $doctrineFindByFields = null;
+        $findByIdentifier = false; //This will allow an optimization on the find method
+        if($context->hasAttribute('doctrineFindByFieldsMap')) {
+            $doctrineFindByFieldsMap = $context->getAttribute('doctrineFindByFieldsMap');
+            if(isset($doctrineFindByFieldsMap[0])) {
+                //This is to create a alias since the path will not be 0 but rather ""
+                $doctrineFindByFieldsMap[""] = $doctrineFindByFieldsMap[0];
+            }
+            $pathAsString = implode('.', $path);
+            if(isset($doctrineFindByFieldsMap[$pathAsString])) {
+                $doctrineFindByFields = $doctrineFindByFieldsMap[$pathAsString];
+            }
+        }
+
+        if(is_null($doctrineFindByFields)) {
+            $doctrineFindByFields = $classMetadata->getIdentifierFieldNames();
+            $findByIdentifier = true;
+        }
+
+        $criteria = [];
+        foreach ($doctrineFindByFields as $name) {
             if ($serializationMetadata && isset($serializationMetadata->propertyMetadata[$name])) {
                 $dataName = $serializationMetadata->propertyMetadata[$name]->serializedName;
             } else {
@@ -115,20 +134,27 @@ class DoctrineObjectConstructor implements ObjectConstructorInterface
 
             if ($classMetadata->hasAssociation($name)) {
                 $data[$dataName] = $this->loadObject(
-                        $classMetadata->getAssociationTargetClass($name),
-                        $data[$dataName],
-                        $context
-                    );
+                    $classMetadata->getAssociationTargetClass($name),
+                    $data[$dataName],
+                    $context,
+                    $path + [$name]
+                );
             }
 
-            $identifierList[$name] = $data[$dataName];
+            $criteria[$name] = $data[$dataName];
         }
 
-        if (empty($identifierList)) {
+        if (empty($criteria)) {
             return null;
         }
 
-        if ($object = $objectManager->find($class, $identifierList)) {
+        if($findByIdentifier) {
+            $object = $objectManager->find($class, $criteria);
+        } else {
+            $object = $objectManager->getRepository($class)->findOneBy($criteria);
+        }
+
+        if ($object) {
             $objectManager->initializeObject($object);
         }
 
