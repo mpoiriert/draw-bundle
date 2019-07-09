@@ -94,10 +94,6 @@ class DoctrineObjectConstructor implements ObjectConstructorInterface
             return null;
         }
 
-        if (!is_array($data)) {
-            return null;
-        }
-
         $classMetadata = $objectManager->getClassMetadata($class);
         $serializationMetadata = $this->metadataFactory->getMetadataForClass($class);
 
@@ -120,38 +116,45 @@ class DoctrineObjectConstructor implements ObjectConstructorInterface
             $findByIdentifier = true;
         }
 
-        $criteria = [];
-        foreach ($doctrineFindByFields as $name) {
-            if ($serializationMetadata && isset($serializationMetadata->propertyMetadata[$name])) {
-                $dataName = $serializationMetadata->propertyMetadata[$name]->serializedName;
-            } else {
-                $dataName = $name;
+        if($findByIdentifier && !is_array($data) && count($doctrineFindByFields) == 1) {
+            $object = $objectManager->find($class, $data);
+        } else {
+            if (!is_array($data)) {
+                return null;
+            }
+            $criteria = [];
+            foreach ($doctrineFindByFields as $name) {
+                if ($serializationMetadata && isset($serializationMetadata->propertyMetadata[$name])) {
+                    $dataName = $serializationMetadata->propertyMetadata[$name]->serializedName;
+                } else {
+                    $dataName = $name;
+                }
+
+                if (!isset($data[$dataName])) {
+                    return null;
+                }
+
+                if ($classMetadata->hasAssociation($name)) {
+                    $data[$dataName] = $this->loadObject(
+                        $classMetadata->getAssociationTargetClass($name),
+                        $data[$dataName],
+                        $context,
+                        $path + [$name]
+                    );
+                }
+
+                $criteria[$name] = $data[$dataName];
             }
 
-            if (!isset($data[$dataName])) {
+            if (empty($criteria)) {
                 return null;
             }
 
-            if ($classMetadata->hasAssociation($name)) {
-                $data[$dataName] = $this->loadObject(
-                    $classMetadata->getAssociationTargetClass($name),
-                    $data[$dataName],
-                    $context,
-                    $path + [$name]
-                );
+            if($findByIdentifier) {
+                $object = $objectManager->find($class, $criteria);
+            } else {
+                $object = $objectManager->getRepository($class)->findOneBy($criteria);
             }
-
-            $criteria[$name] = $data[$dataName];
-        }
-
-        if (empty($criteria)) {
-            return null;
-        }
-
-        if($findByIdentifier) {
-            $object = $objectManager->find($class, $criteria);
-        } else {
-            $object = $objectManager->getRepository($class)->findOneBy($criteria);
         }
 
         if ($object) {
