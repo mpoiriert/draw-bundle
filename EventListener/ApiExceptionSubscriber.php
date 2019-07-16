@@ -150,7 +150,15 @@ class ApiExceptionSubscriber implements EventSubscriberInterface, LoggerAwareInt
      */
     private function getFormat(Request $request)
     {
-        return $request->getRequestFormat();
+        if($requestFormat = $request->getRequestFormat()) {
+            return $requestFormat;
+        }
+
+        if(!($contentTypes = $request->getAcceptableContentTypes())) {
+            return null;
+        }
+
+        return $request->getFormat($contentTypes[0]);
     }
 
     public function getExceptionDetail(\Throwable $e, $full = true)
