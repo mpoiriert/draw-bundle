@@ -8,7 +8,6 @@ use Psr\Log\LoggerAwareInterface;
 use Psr\Log\LoggerAwareTrait;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
-use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpKernel\Event\GetResponseForExceptionEvent;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 use Symfony\Component\HttpKernel\KernelEvents;
@@ -95,7 +94,7 @@ class ApiExceptionSubscriber implements EventSubscriberInterface, LoggerAwareInt
         $exception = $event->getException();
         $request = $event->getRequest();
 
-        if ($this->getFormat($request) != 'json') {
+        if ($request->getRequestFormat() != 'json') {
             return;
         }
 
@@ -142,23 +141,6 @@ class ApiExceptionSubscriber implements EventSubscriberInterface, LoggerAwareInt
                 true
             )
         );
-    }
-
-    /**
-     * @param Request $request
-     * @return string
-     */
-    private function getFormat(Request $request)
-    {
-        if($requestFormat = $request->getRequestFormat()) {
-            return $requestFormat;
-        }
-
-        if(!($contentTypes = $request->getAcceptableContentTypes())) {
-            return null;
-        }
-
-        return $request->getFormat($contentTypes[0]);
     }
 
     public function getExceptionDetail(\Throwable $e, $full = true)
