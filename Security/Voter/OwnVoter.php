@@ -49,7 +49,7 @@ class OwnVoter implements VoterInterface
             }
 
             if($object instanceof OwnedInterface) {
-                $object->isOwnedBy($user) ? VoterInterface::ACCESS_GRANTED : VoterInterface::ACCESS_DENIED;
+                return $object->isOwnedBy($user) ? VoterInterface::ACCESS_GRANTED : VoterInterface::ACCESS_DENIED;
             } elseif($object instanceof OwnedByInterface) {
                 $ownedBy = $object->getOwnedBy();
                 if(is_null($ownedBy)) {
